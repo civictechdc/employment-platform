@@ -1,6 +1,11 @@
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
+import { SignInButton, SignOutButton } from './AuthButton'
 
-export default function Header() {
+export default async function Header() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   return (
     <header className="bg-white border-b border-gray-200">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -26,10 +31,24 @@ export default function Header() {
             href="https://www.civictechdc.org/slack"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm bg-brand-blue text-white px-4 py-1.5 rounded hover:opacity-90 transition-opacity"
+            className="text-sm text-gray-600 hover:text-brand-blue transition-colors"
           >
-            Join Slack
+            Slack
           </a>
+          {user ? (
+            <div className="flex items-center gap-3">
+              {user.user_metadata?.avatar_url && (
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt={user.user_metadata.user_name ?? 'User'}
+                  className="w-8 h-8 rounded-full"
+                />
+              )}
+              <SignOutButton />
+            </div>
+          ) : (
+            <SignInButton />
+          )}
         </nav>
       </div>
     </header>
