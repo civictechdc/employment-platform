@@ -1,10 +1,12 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { SignInButton, SignOutButton } from './AuthButton'
+import { canCreateProject } from '@/lib/roles'
 
 export default async function Header() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const showNewProject = user ? await canCreateProject() : false
 
   return (
     <header className="bg-white border-b border-gray-200">
@@ -37,6 +39,14 @@ export default async function Header() {
           </a>
           {user ? (
             <div className="flex items-center gap-3">
+              {showNewProject && (
+                <Link
+                  href="/admin/projects/new"
+                  className="text-sm bg-brand-blue text-white px-4 py-1.5 rounded hover:opacity-90 transition-opacity"
+                >
+                  New Project
+                </Link>
+              )}
               {user.user_metadata?.avatar_url && (
                 <img
                   src={user.user_metadata.avatar_url}

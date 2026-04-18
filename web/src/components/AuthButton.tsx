@@ -17,7 +17,7 @@ export function SignInButton() {
   return (
     <button
       onClick={signIn}
-      className="text-sm bg-brand-blue text-white px-4 py-1.5 rounded hover:opacity-90 transition-opacity"
+      className="text-sm bg-brand-blue text-white px-4 py-1.5 rounded hover:opacity-90 transition-opacity cursor-pointer"
     >
       Sign in with GitHub
     </button>
