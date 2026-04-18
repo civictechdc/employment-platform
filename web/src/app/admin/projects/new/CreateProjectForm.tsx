@@ -1,0 +1,194 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import type { ProjectStatus } from '@/lib/types'
+
+const STATUS_OPTIONS: { value: ProjectStatus; label: string }[] = [
+  { value: 'active', label: 'Active' },
+  { value: 'incubator', label: 'Incubator' },
+  { value: 'seeking_volunteers', label: 'Seeking Volunteers' },
+  { value: 'paused', label: 'Paused' },
+  { value: 'completed', label: 'Completed' },
+]
+
+function toSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+}
+
+export default function CreateProjectForm() {
+  const router = useRouter()
+  const supabase = createClient()
+
+  const [name, setName] = useState('')
+  const [slug, setSlug] = useState('')
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
+  const [description, setDescription] = useState('')
+  const [status, setStatus] = useState<ProjectStatus>('active')
+  const [contactEmail, setContactEmail] = useState('')
+  const [tagsInput, setTagsInput] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+
+  function handleNameChange(value: string) {
+    setName(value)
+    if (!slugManuallyEdited) {
+      setSlug(toSlug(value))
+    }
+  }
+
+  function handleSlugChange(value: string) {
+    setSlugManuallyEdited(true)
+    setSlug(value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setSubmitting(true)
+
+    const tags = tagsInput
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean)
+
+    const { data: projectId, error: rpcError } = await supabase.rpc('create_project', {
+      p_name: name,
+      p_slug: slug,
+      p_description: description || null,
+      p_status: status,
+      p_contact_email: contactEmail || null,
+      p_tags: tags,
+    })
+
+    if (rpcError) {
+      setError(rpcError.message)
+      setSubmitting(false)
+      return
+    }
+
+    // Fetch the slug for the newly created project to redirect to it
+    const { data: project } = await supabase
+      .from('projects')
+      .select('slug')
+      .eq('id', projectId)
+      .single()
+
+    router.push(`/projects/${project?.slug ?? slug}`)
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-gray-700">
+          Project Name <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          required
+          value={name}
+          onChange={(e) => handleNameChange(e.target.value)}
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+          placeholder="Civic Data Portal"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-gray-700">
+          Slug <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          required
+          value={slug}
+          onChange={(e) => handleSlugChange(e.target.value)}
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+          placeholder="civic-data-portal"
+        />
+        <p className="text-xs text-gray-500">
+          URL: /projects/{slug || 'your-slug'}
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-gray-700">Description</label>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={4}
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent resize-none"
+          placeholder="What does this project do and why does it matter?"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-gray-700">
+          Status <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value as ProjectStatus)}
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+        >
+          {STATUS_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-gray-700">Contact Email</label>
+        <input
+          type="email"
+          value={contactEmail}
+          onChange={(e) => setContactEmail(e.target.value)}
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+          placeholder="project@example.com"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-gray-700">Tags</label>
+        <input
+          type="text"
+          value={tagsInput}
+          onChange={(e) => setTagsInput(e.target.value)}
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+          placeholder="React, Python, UX Design"
+        />
+        <p className="text-xs text-gray-500">Comma-separated</p>
+      </div>
+
+      <div className="flex justify-end gap-3 pt-2">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="text-sm text-gray-600 hover:text-gray-900 px-4 py-2 transition-colors cursor-pointer"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={submitting}
+          className="text-sm bg-brand-blue text-white px-6 py-2 rounded hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
+        >
+          {submitting ? 'Creating...' : 'Create Project'}
+        </button>
+      </div>
+    </form>
+  )
+}
