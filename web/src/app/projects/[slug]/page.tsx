@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { ProjectWithDetails } from '@/lib/types'
 import StatusBadge from '@/components/StatusBadge'
+import { isProjectLead } from '@/lib/roles'
 
 export default async function ProjectPage(props: PageProps<'/projects/[slug]'>) {
   const { slug } = await props.params
@@ -35,6 +36,7 @@ export default async function ProjectPage(props: PageProps<'/projects/[slug]'>) 
   }
 
   const p = project as ProjectWithDetails
+  const lead = await isProjectLead(p.id)
   const leads = p.project_members.filter((m) => m.is_lead)
   const contributors = p.project_members.filter((m) => !m.is_lead)
 
@@ -48,7 +50,17 @@ export default async function ProjectPage(props: PageProps<'/projects/[slug]'>) 
       {/* Header */}
       <div className="flex items-start justify-between gap-6 mb-6">
         <h1 className="text-3xl font-bold text-gray-900">{p.name}</h1>
-        <StatusBadge status={p.status} />
+        <div className="flex items-center gap-3">
+          <StatusBadge status={p.status} />
+          {lead && (
+            <Link
+              href={`/projects/${p.slug}/edit`}
+              className="text-sm text-gray-500 hover:text-brand-blue transition-colors"
+            >
+              Edit
+            </Link>
+          )}
+        </div>
       </div>
 
       {p.description && (

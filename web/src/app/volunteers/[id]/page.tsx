@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import StatusBadge from '@/components/StatusBadge'
 import { ProjectStatus } from '@/lib/types'
+import { getVolunteerForUser } from '@/lib/roles'
 
 export default async function VolunteerPage(props: PageProps<'/volunteers/[id]'>) {
   const { id } = await props.params
@@ -28,6 +29,9 @@ export default async function VolunteerPage(props: PageProps<'/volunteers/[id]'>
   if (error || !volunteer) {
     notFound()
   }
+
+  const currentVolunteer = await getVolunteerForUser()
+  const isOwner = currentVolunteer?.id === id
 
   const projects = volunteer.project_members.map((m: {
     role_title: string | null
@@ -59,8 +63,18 @@ export default async function VolunteerPage(props: PageProps<'/volunteers/[id]'>
             {volunteer.name.charAt(0)}
           </div>
         )}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{volunteer.name}</h1>
+        <div className="flex-1">
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="text-2xl font-bold text-gray-900">{volunteer.name}</h1>
+            {isOwner && (
+              <Link
+                href={`/volunteers/${id}/edit`}
+                className="text-sm text-gray-500 hover:text-brand-blue transition-colors"
+              >
+                Edit Profile
+              </Link>
+            )}
+          </div>
           {/* Social links */}
           <div className="flex gap-4 mt-2">
             {volunteer.linkedin_url && (
