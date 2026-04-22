@@ -88,9 +88,13 @@ The goal here is to get something working quickly that organizes existing projec
 > **Decision:** Dropped per-project contact buttons as the Civic Tech DC website already points to an existing Slack group and is the most common form of communication. A proper join request flow will come in Phase 2.
 
 ### Phase 2 — Self-Service: Accounts & Profiles
+- [x] GitHub OAuth sign-in
+- [x] Per-project lead roles — leads can only manage their own project, not others
+- [x] Project leads can create projects (granted via `can_create_project` flag)
+- [x] Project leads can edit their project page
+- [x] Project leads can manage their project's team roster and open roles
+- [x] Volunteers self-manage their own profiles
 - [ ] Invite-based account creation for volunteers
-- [ ] Volunteers self-manage their own profiles
-- [ ] Project leads can manage their project page and team roster
 - [ ] Volunteers can request to join a project (lead approves/rejects)
 - [ ] Notifications for join requests
 
@@ -128,8 +132,7 @@ On the main projects page, visitors can filter/search by:
 
 ---
 
-## Open Questions (to revisit before Phase 2)
-- What email/identity provider should be used for auth? (GitHub OAuth is a natural fit for a civic tech org)
-- How should the invite flow work in Phase 2? Email invite link? Admin creates the account?
+## Open Questions
+- How should the invite flow work? Email invite link? Admin creates the account?
 - Should past/completed projects still be fully browsable, or tucked into an archive?
 - Will the platform eventually need multilingual support?

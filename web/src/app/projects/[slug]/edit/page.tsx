@@ -3,7 +3,8 @@ import { supabase } from '@/lib/supabase'
 import { isProjectLead } from '@/lib/roles'
 import EditProjectForm from './EditProjectForm'
 import TeamManager from './TeamManager'
-import type { Project, ProjectMember, Volunteer } from '@/lib/types'
+import OpenRolesManager from './OpenRolesManager'
+import type { Project, ProjectMember, Volunteer, OpenRole } from '@/lib/types'
 
 export default async function EditProjectPage(props: PageProps<'/projects/[slug]/edit'>) {
   const { slug } = await props.params
@@ -19,10 +20,10 @@ export default async function EditProjectPage(props: PageProps<'/projects/[slug]
   const lead = await isProjectLead(project.id)
   if (!lead) redirect(`/projects/${slug}`)
 
-  const { data: members } = await supabase
-    .from('project_members')
-    .select('*, volunteers(*)')
-    .eq('project_id', project.id)
+  const [{ data: members }, { data: openRoles }] = await Promise.all([
+    supabase.from('project_members').select('*, volunteers(*)').eq('project_id', project.id),
+    supabase.from('open_roles').select('*').eq('project_id', project.id),
+  ])
 
   return (
     <main className="max-w-2xl mx-auto px-6 py-12">
@@ -33,6 +34,12 @@ export default async function EditProjectPage(props: PageProps<'/projects/[slug]
       <TeamManager
         projectId={project.id}
         initialMembers={(members ?? []) as (ProjectMember & { volunteers: Volunteer })[]}
+      />
+      <hr className="my-10 border-gray-200" />
+      <h2 className="text-lg font-semibold text-gray-900 mb-6">Open Roles</h2>
+      <OpenRolesManager
+        projectId={project.id}
+        initialRoles={(openRoles ?? []) as OpenRole[]}
       />
     </main>
   )
