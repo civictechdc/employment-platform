@@ -35,7 +35,8 @@ export default async function JobsPage() {
     return <pre className="p-8 text-red-600">Error: {error.message}</pre>
   }
 
-  const openRoles = (roles ?? []) as OpenRoleWithProject[]
+  // TODO: replace manual cast with Supabase generated types (supabase gen types)
+  const openRoles = (roles ?? []) as unknown as OpenRoleWithProject[]
 
   return (
     <>
