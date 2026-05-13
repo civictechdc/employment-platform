@@ -94,12 +94,11 @@ The goal here is to get something working quickly that organizes existing projec
 - [x] Project leads can edit their project page
 - [x] Project leads can manage their project's team roster and open roles
 - [x] Volunteers self-manage their own profiles
-- [ ] Invite-based account creation for volunteers
-- [ ] Volunteers can request to join a project (lead approves/rejects)
-- [ ] Notifications for join requests
+- [ ] Open registration — auto-create a volunteer record on first GitHub sign-in (#2)
+- [ ] Volunteers can request to join a project (lead approves/rejects) (#3)
+- [ ] Notifications for join requests — email, in-app, or Slack TBD (#4)
 
 ### Phase 3 — Volunteer Job Board
-- [ ] Open self-registration
 - [ ] Skills matching — surface relevant projects to a volunteer based on their profile
 - [ ] Project "open roles" work like job listings volunteers can apply to
 - [ ] Potential expansion to paid contract opportunities
