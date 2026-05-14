@@ -26,7 +26,8 @@ interface EditProjectTabsProps {
 
 export default function EditProjectTabs({ project, members, openRoles, joinRequests }: EditProjectTabsProps) {
   const [active, setActive] = useState<Tab>('details')
-  const pendingCount = joinRequests.length
+  const [requests, setRequests] = useState(joinRequests)
+  const pendingCount = requests.length
 
   return (
     <div>
@@ -64,7 +65,7 @@ export default function EditProjectTabs({ project, members, openRoles, joinReque
       {active === 'team' && <TeamManager projectId={project.id} initialMembers={members} />}
       {active === 'roles' && <OpenRolesManager projectId={project.id} initialRoles={openRoles} />}
       {active === 'requests' && (
-        <JoinRequestsManager projectId={project.id} initialRequests={joinRequests} />
+        <JoinRequestsManager projectId={project.id} requests={requests} onRequestsChange={setRequests} />
       )}
     </div>
   )

@@ -8,13 +8,14 @@ type RequestWithVolunteer = JoinRequest & { volunteers: Volunteer }
 
 export default function JoinRequestsManager({
   projectId,
-  initialRequests,
+  requests,
+  onRequestsChange,
 }: {
   projectId: string
-  initialRequests: RequestWithVolunteer[]
+  requests: RequestWithVolunteer[]
+  onRequestsChange: (requests: RequestWithVolunteer[]) => void
 }) {
   const supabase = createClient()
-  const [requests, setRequests] = useState<RequestWithVolunteer[]>(initialRequests)
   const [acting, setActing] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [approvingId, setApprovingId] = useState<string | null>(null)
@@ -46,7 +47,7 @@ export default function JoinRequestsManager({
       return
     }
 
-    setRequests((prev) => prev.filter((r) => r.id !== request.id))
+    onRequestsChange(requests.filter((r) => r.id !== request.id))
     setRoleTitle('')
     setActing(null)
   }
@@ -66,7 +67,7 @@ export default function JoinRequestsManager({
       return
     }
 
-    setRequests((prev) => prev.filter((r) => r.id !== requestId))
+    onRequestsChange(requests.filter((r) => r.id !== requestId))
     setActing(null)
   }
 
