@@ -1,9 +1,11 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
 import { ProjectWithDetails } from '@/lib/types'
 import StatusBadge from '@/components/StatusBadge'
-import { isProjectLead } from '@/lib/roles'
+import { isProjectLead, getVolunteerForUser } from '@/lib/roles'
+import JoinRequestButton from './JoinRequestButton'
 
 export default async function ProjectPage(props: PageProps<'/projects/[slug]'>) {
   const { slug } = await props.params
@@ -36,9 +38,26 @@ export default async function ProjectPage(props: PageProps<'/projects/[slug]'>) 
   }
 
   const p = project as ProjectWithDetails
-  const lead = await isProjectLead(p.id)
+  const [lead, volunteer] = await Promise.all([isProjectLead(p.id), getVolunteerForUser()])
   const leads = p.project_members.filter((m) => m.is_lead)
   const contributors = p.project_members.filter((m) => !m.is_lead)
+
+  const isAlreadyMember = volunteer
+    ? p.project_members.some((m) => m.volunteers.id === volunteer.id)
+    : false
+
+  let hasPendingRequest = false
+  if (volunteer && !isAlreadyMember) {
+    const supabaseAuth = await createClient()
+    const { data } = await supabaseAuth
+      .from('join_requests')
+      .select('id')
+      .eq('volunteer_id', volunteer.id)
+      .eq('project_id', p.id)
+      .eq('status', 'pending')
+      .maybeSingle()
+    hasPendingRequest = !!data
+  }
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-12">
@@ -126,6 +145,20 @@ export default async function ProjectPage(props: PageProps<'/projects/[slug]'>) 
                   </div>
                 ))}
               </div>
+            </section>
+          )}
+
+          {/* Join request */}
+          {volunteer && !isAlreadyMember && (
+            <section>
+              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+                Get Involved
+              </h2>
+              <JoinRequestButton
+                projectId={p.id}
+                volunteerId={volunteer.id}
+                hasPendingRequest={hasPendingRequest}
+              />
             </section>
           )}
 

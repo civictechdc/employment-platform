@@ -1,10 +1,12 @@
 import { notFound, redirect } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
 import { isProjectLead } from '@/lib/roles'
 import EditProjectForm from './EditProjectForm'
 import TeamManager from './TeamManager'
 import OpenRolesManager from './OpenRolesManager'
-import type { Project, ProjectMember, Volunteer, OpenRole } from '@/lib/types'
+import JoinRequestsManager from './JoinRequestsManager'
+import type { Project, ProjectMember, Volunteer, OpenRole, JoinRequest } from '@/lib/types'
 
 export default async function EditProjectPage(props: PageProps<'/projects/[slug]/edit'>) {
   const { slug } = await props.params
@@ -20,9 +22,11 @@ export default async function EditProjectPage(props: PageProps<'/projects/[slug]
   const lead = await isProjectLead(project.id)
   if (!lead) redirect(`/projects/${slug}`)
 
-  const [{ data: members }, { data: openRoles }] = await Promise.all([
+  const supabaseAuth = await createClient()
+  const [{ data: members }, { data: openRoles }, { data: joinRequests }] = await Promise.all([
     supabase.from('project_members').select('*, volunteers(*)').eq('project_id', project.id),
     supabase.from('open_roles').select('*').eq('project_id', project.id),
+    supabaseAuth.from('join_requests').select('*, volunteers(*)').eq('project_id', project.id).eq('status', 'pending'),
   ])
 
   return (
@@ -40,6 +44,12 @@ export default async function EditProjectPage(props: PageProps<'/projects/[slug]
       <OpenRolesManager
         projectId={project.id}
         initialRoles={(openRoles ?? []) as OpenRole[]}
+      />
+      <hr className="my-10 border-gray-200" />
+      <h2 className="text-lg font-semibold text-gray-900 mb-6">Join Requests</h2>
+      <JoinRequestsManager
+        projectId={project.id}
+        initialRequests={(joinRequests ?? []) as (JoinRequest & { volunteers: Volunteer })[]}
       />
     </main>
   )

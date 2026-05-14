@@ -47,3 +47,13 @@ export interface ProjectWithDetails extends Project {
   project_members: ProjectMember[]
   open_roles: OpenRole[]
 }
+
+export interface JoinRequest {
+  id: string
+  volunteer_id: string
+  project_id: string
+  status: 'pending' | 'approved' | 'rejected'
+  message: string | null
+  created_at: string
+  volunteers?: Volunteer
+}
