@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Project, ProjectStatus } from '@/lib/types'
 
@@ -128,26 +127,18 @@ export default function EditProjectForm({ project }: { project: Project }) {
         <p className="text-xs text-gray-500">Comma-separated</p>
       </div>
 
-      <div className="flex items-center justify-between pt-2">
-        <Link
-          href={`/projects/${project.slug}`}
-          className="text-sm text-gray-500 hover:text-brand-blue transition-colors"
+      <div className="flex items-center justify-end gap-3 pt-2">
+        {saved && !submitting && (
+          <span className="text-sm text-green-600">Changes saved</span>
+        )}
+        <button
+          type="submit"
+          disabled={submitting}
+          onClick={() => setSaved(false)}
+          className="text-sm bg-brand-blue text-white px-6 py-2 rounded hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
         >
-          ← View project
-        </Link>
-        <div className="flex items-center gap-3">
-          {saved && !submitting && (
-            <span className="text-sm text-green-600">Changes saved</span>
-          )}
-          <button
-            type="submit"
-            disabled={submitting}
-            onClick={() => setSaved(false)}
-            className="text-sm bg-brand-blue text-white px-6 py-2 rounded hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
-          >
-            {submitting ? 'Saving...' : 'Save Changes'}
-          </button>
-        </div>
+          {submitting ? 'Saving...' : 'Save Changes'}
+        </button>
       </div>
     </form>
   )

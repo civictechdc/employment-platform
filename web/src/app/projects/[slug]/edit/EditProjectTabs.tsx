@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import EditProjectForm from './EditProjectForm'
 import TeamManager from './TeamManager'
 import OpenRolesManager from './OpenRolesManager'
@@ -29,6 +30,13 @@ export default function EditProjectTabs({ project, members, openRoles, joinReque
 
   return (
     <div>
+      <Link
+        href={`/projects/${project.slug}`}
+        className="inline-block text-sm text-brand-blue hover:underline mb-6"
+      >
+        ← Back to project
+      </Link>
+
       {/* Tab bar */}
       <div className="flex border-b border-gray-200 mb-8 gap-1">
         {TABS.map((tab) => (
