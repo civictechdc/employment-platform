@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { SignInButton, SignOutButton } from './AuthButton'
 import { canCreateProject, getVolunteerForUser } from '@/lib/roles'
+import MobileMenu from './MobileMenu'
 
 export default async function Header() {
   const supabase = await createClient()
@@ -11,12 +12,12 @@ export default async function Header() {
     : [false, null]
 
   return (
-    <header className="bg-white border-b border-gray-200">
+    <header className="bg-white border-b border-gray-200 relative">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link href="/" className="font-serif font-bold text-gray-900 text-lg hover:text-brand-blue transition-colors">
           Civic Tech DC
         </Link>
-        <nav className="flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-6">
           <Link href="/" className="text-sm text-gray-600 hover:text-brand-blue transition-colors">
             Projects
           </Link>
@@ -70,6 +71,13 @@ export default async function Header() {
             <SignInButton />
           )}
         </nav>
+        <MobileMenu
+          isLoggedIn={!!user}
+          showNewProject={showNewProject}
+          volunteerId={volunteer?.id ?? null}
+          avatarUrl={user?.user_metadata?.avatar_url ?? null}
+          username={user?.user_metadata?.user_name ?? null}
+        />
       </div>
     </header>
   )
